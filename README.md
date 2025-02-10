@@ -1,2 +1,2 @@
 # CREEPS-Destroy
-La solution finale (pour creeps^^)
+La solution *ultime
