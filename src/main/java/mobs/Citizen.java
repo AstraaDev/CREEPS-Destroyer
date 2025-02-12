@@ -1,8 +1,12 @@
 package mobs;
 
 import action.*;
+import com.epita.creeps.given.exception.NoReportException;
+import com.epita.creeps.given.json.Json;
 import com.epita.creeps.given.vo.geometry.Direction;
 import com.epita.creeps.given.vo.geometry.Point;
+import com.epita.creeps.given.vo.report.ObserveReport;
+import com.epita.creeps.given.vo.response.CommandResponse;
 import com.epita.creeps.given.vo.response.InitResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
@@ -36,11 +40,21 @@ public abstract class Citizen extends Thread {
 
     public void run() {
         int cycleLength = 4;
-        // TODO : recover citizen position
+        CommandResponse observeResponse = action.observe(citizenId);
         Point citizenPosition = null;
 
+        try {
+            ObserveReport observeReport = Json.parseReport(call.getReport(observeResponse.reportId));
+            citizenPosition = observeReport.unitPosition;
+            System.out.println(observeReport.unitPosition);
+        } catch (NoReportException | UnirestException e) {
+            // TODO : manage exception
+            throw new RuntimeException(e);
+        }
+
+        Point coordHdv = null;
+
         while(true) {
-            Point coordHdv = null;
             try {
                 coordHdv = isCycleSafe(citizenPosition, cycleLength);
                 if (coordHdv != null) {
@@ -54,9 +68,13 @@ public abstract class Citizen extends Thread {
             }
 
             action.move(citizenId, Direction.UP);
-            action.move(citizenId,Direction.LEFT);
-            action.move(citizenId,Direction.RIGHT);
-            action.move(citizenId,Direction.DOWN);
+            citizenPosition = new Point(citizenPosition.x, citizenPosition.y + 1);
+            action.move(citizenId, Direction.LEFT);
+            citizenPosition = new Point(citizenPosition.x - 1, citizenPosition.y);
+            action.move(citizenId, Direction.RIGHT);
+            citizenPosition = new Point(citizenPosition.x + 1, citizenPosition.y);
+            action.move(citizenId, Direction.DOWN);
+            citizenPosition = new Point(citizenPosition.x, citizenPosition.y - 1);
         }
     }
 }
