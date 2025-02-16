@@ -2,7 +2,9 @@ package mobs;
 
 import action.*;
 import com.epita.creeps.given.exception.NoReportException;
+import com.epita.creeps.given.extra.Cartographer;
 import com.epita.creeps.given.json.Json;
+import com.epita.creeps.given.vo.Tile;
 import com.epita.creeps.given.vo.geometry.Direction;
 import com.epita.creeps.given.vo.geometry.Point;
 import com.epita.creeps.given.vo.report.ObserveReport;
@@ -28,12 +30,47 @@ public abstract class Citizen extends Thread {
         this.timeout = timeout;
     }
 
+    public class DirectionInfo {
+        public final Direction direction;
+        public final int dx;
+        public final int dy;
+
+        public DirectionInfo(Direction direction, int dx, int dy) {
+            this.direction = direction;
+            this.dx = dx;
+            this.dy = dy;
+        }
+    }
+
+    public DirectionInfo getDirection(int direction) {
+        return switch (direction % 4) {
+            case 0 -> new DirectionInfo(Direction.UP, 0, 1);
+            case 1 -> new DirectionInfo(Direction.RIGHT, 1, 0);
+            case 2 -> new DirectionInfo(Direction.DOWN, 0, -1);
+            case 3 -> new DirectionInfo(Direction.LEFT, -1, 0);
+            default -> throw new IllegalArgumentException("Invalid direction");
+        };
+    }
+
     public Point isCycleSafe(Point citizenPosition, int cycleLength) throws UnirestException {
         Point coordHdv = position.findNearestHdv(citizenPosition);
         int hdvDistance = position.calcDistance(citizenPosition, coordHdv);
 
         if ((position.nextGc() - cycleLength) / (initResponse.costs.move.cast * timeout) <= hdvDistance) {
             return coordHdv;
+        }
+        return null;
+    }
+
+    public Point nextTarget(Point position, Tile targetType) {
+        for (int i = position.x - 2; i < position.x + 2; i++) {
+            for (int j = position.y - 2; j < position.y + 2; j++) {
+                Point p = new Point(i, j);
+                Tile tile = Cartographer.INSTANCE.requestTileType(p);
+                if (tile != null && tile.equals(targetType)) {
+                    return p;
+                }
+            }
         }
         return null;
     }
@@ -46,19 +83,17 @@ public abstract class Citizen extends Thread {
         try {
             ObserveReport observeReport = Json.parseReport(call.getReport(observeResponse.reportId));
             citizenPosition = observeReport.unitPosition;
-            System.out.println(observeReport.unitPosition);
         } catch (NoReportException | UnirestException e) {
             // TODO : manage exception
             throw new RuntimeException(e);
         }
 
-        Point coordHdv = null;
-
         while(true) {
             try {
-                coordHdv = isCycleSafe(citizenPosition, cycleLength);
+                Point coordHdv = isCycleSafe(citizenPosition, cycleLength);
                 if (coordHdv != null) {
                     position.goTo(citizenId, citizenPosition, coordHdv);
+                    citizenPosition = new Point(coordHdv.x, coordHdv.y);
                     action.unload(citizenId);
                     continue;
                 }
