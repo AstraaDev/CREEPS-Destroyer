@@ -1,13 +1,13 @@
 import action.Action;
+import action.Position;
 import action.ServerCall;
 import com.epita.creeps.given.json.Json;
 import com.epita.creeps.given.vo.response.InitResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
-
+import mobs.*;
 import java.util.*;
 
 public class Program {
-
     public static void main(String[] args) throws UnirestException {
         boolean devMode = true;
 
@@ -28,5 +28,13 @@ public class Program {
         // Commands instance declaration
         double timeout = 1000 / initResponse.setup.ticksPerSeconds;
         Action action = new Action(initResponse, call, timeout);
+        Position position = new Position(call, initResponse, action);
+
+        Citizen cooker = new Cooker(call, initResponse, initResponse.citizen1Id, action, position, timeout, true);
+        Citizen fetiche = new Fetiche(call, initResponse, initResponse.citizen2Id, action, position, timeout, false);
+
+        // Threads
+        cooker.start();
+        fetiche.start();
     }
 }

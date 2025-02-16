@@ -20,14 +20,16 @@ public abstract class Citizen extends Thread {
     Action action;
     Position position;
     double timeout;
+    boolean debugMode;
 
-    public Citizen(ServerCall call, InitResponse initResponse, String citizenId, Action action, Position position, double timeout) {
+    public Citizen(ServerCall call, InitResponse initResponse, String citizenId, Action action, Position position, double timeout, boolean debugMode) {
         this.call = call;
         this.initResponse = initResponse;
         this.citizenId = citizenId;
         this.action = action;
         this.position = position;
         this.timeout = timeout;
+        this.debugMode = debugMode;
     }
 
     public class DirectionInfo {
@@ -56,7 +58,9 @@ public abstract class Citizen extends Thread {
         Point coordHdv = position.findNearestHdv(citizenPosition);
         int hdvDistance = position.calcDistance(citizenPosition, coordHdv);
 
-        System.out.println((position.nextGc() - cycleLength) + " / " + (initResponse.costs.move.cast) + " = " + ((position.nextGc() - cycleLength) / (initResponse.costs.move.cast)) + " <= " + hdvDistance);
+        if (debugMode) {
+            System.out.println((position.nextGc() - cycleLength) + " / " + (initResponse.costs.move.cast) + " = " + ((position.nextGc() - cycleLength) / (initResponse.costs.move.cast)) + " <= " + hdvDistance);
+        }
 
         if ((position.nextGc() - cycleLength) / (initResponse.costs.move.cast) <= hdvDistance) {
             return coordHdv;
@@ -65,13 +69,19 @@ public abstract class Citizen extends Thread {
     }
 
     public Point nextTarget(Point position, Tile targetType) {
-        for (int i = position.x - 2; i < position.x + 2; i++) {
-            for (int j = position.y - 2; j < position.y + 2; j++) {
-                Point p = new Point(i, j);
-                Tile tile = Cartographer.INSTANCE.requestTileType(p);
-                if (tile != null && tile.equals(targetType)) {
-                    return p;
-                }
+        int[][] directions = {
+                {0, 1}, {1, 0}, {0, -1}, {-1, 0}, // 1 move
+                {1, 1}, {1, -1}, {-1, -1}, {-1, 1}, // 2 pseudo-diagonale moves
+                {0, 2}, {2, 0}, {0, -2}, {-2, 0}, // 2 direct moves
+                {-1, -2},{1, 2}, {2, 1}, {2, -1}, {1, -2}, {-1, 2}, {-2, -1}, {-2, 1}, // 3 pseudo-diagonale moves
+                {2, 2}, {2, -2}, {-2, -2}, {-2, 2}, // 4 pseudo-diagonale moves
+        };
+
+        for (int[] dir : directions) {
+            Point p = new Point(position.x + dir[0], position.y + dir[1]);
+            Tile tile = Cartographer.INSTANCE.requestTileType(p);
+            if (tile != null && tile.equals(targetType)) {
+                return p;
             }
         }
         return null;

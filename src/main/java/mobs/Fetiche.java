@@ -14,8 +14,8 @@ import com.epita.creeps.given.vo.response.InitResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
 public class Fetiche extends Citizen {
-    public Fetiche(ServerCall call, InitResponse initResponse, String citizenId, Action action, Position position, double timeout) {
-        super(call, initResponse, citizenId, action, position, timeout);
+    public Fetiche(ServerCall call, InitResponse initResponse, String citizenId, Action action, Position position, double timeout, boolean debugMode) {
+        super(call, initResponse, citizenId, action, position, timeout, debugMode);
     }
 
     @Override

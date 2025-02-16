@@ -13,8 +13,8 @@ import com.epita.creeps.given.vo.response.InitResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
 public class Cooker extends Citizen {
-    public Cooker(ServerCall call, InitResponse initResponse, String citizenId, Action action, Position position, double timeout) {
-        super(call, initResponse, citizenId, action, position, timeout);
+    public Cooker(ServerCall call, InitResponse initResponse, String citizenId, Action action, Position position, double timeout, boolean debugMode) {
+        super(call, initResponse, citizenId, action, position, timeout, debugMode);
     }
 
     @Override
@@ -31,7 +31,7 @@ public class Cooker extends Citizen {
             // throw new RuntimeException(e);
         }
 
-        int cycleLength = 6;
+        int cycleLength = 7;
         int directionChoice = 0;
 
         while(true) {
@@ -39,16 +39,22 @@ public class Cooker extends Citizen {
                 Point coordHdv = isCycleSafe(citizenPosition, cycleLength);
                 // TODO : or inventory is full
                 if (coordHdv != null) {
-                    System.out.println("Go to " + coordHdv + " from " + citizenPosition);
+                    if (debugMode) {
+                        System.out.println("GC BackToHome: from " + citizenPosition + " to " + coordHdv);
+                    }
                     position.goTo(citizenId, citizenPosition, coordHdv);
                     citizenPosition = new Point(coordHdv.x, coordHdv.y);
                     action.unload(citizenId);
                     directionChoice++;
                     while (position.nextGc() != initResponse.setup.gcTickRate) {
-                        System.out.println(position.nextGc() + " != " + initResponse.setup.gcTickRate);
+                        if (debugMode) {
+                            System.out.println(position.nextGc() + " != " + initResponse.setup.gcTickRate);
+                        }
                         action.observe(citizenId);
                     }
-                    System.out.println(position.nextGc() + " == " + initResponse.setup.gcTickRate);
+                    if (debugMode) {
+                        System.out.println(position.nextGc() + " == " + initResponse.setup.gcTickRate);
+                    }
                     continue;
                 }
                 DirectionInfo d = getDirection(directionChoice);
