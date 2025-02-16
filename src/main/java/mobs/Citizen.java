@@ -56,7 +56,9 @@ public abstract class Citizen extends Thread {
         Point coordHdv = position.findNearestHdv(citizenPosition);
         int hdvDistance = position.calcDistance(citizenPosition, coordHdv);
 
-        if ((position.nextGc() - cycleLength) / (initResponse.costs.move.cast * timeout) <= hdvDistance) {
+        System.out.println((position.nextGc() - cycleLength) + " / " + (initResponse.costs.move.cast) + " = " + ((position.nextGc() - cycleLength) / (initResponse.costs.move.cast)) + " <= " + hdvDistance);
+
+        if ((position.nextGc() - cycleLength) / (initResponse.costs.move.cast) <= hdvDistance) {
             return coordHdv;
         }
         return null;
@@ -85,6 +87,7 @@ public abstract class Citizen extends Thread {
             citizenPosition = observeReport.unitPosition;
         } catch (NoReportException | UnirestException e) {
             // TODO : manage exception
+            System.out.println("Citizen-1 Error: " + e.getMessage());
             throw new RuntimeException(e);
         }
 
@@ -98,8 +101,9 @@ public abstract class Citizen extends Thread {
                     continue;
                 }
             } catch (UnirestException e) {
+                System.out.println("Citizen-2 Error: " + e.getMessage());
                 // TODO : manage exception
-                throw new RuntimeException(e);
+                // throw new RuntimeException(e);
             }
 
             action.move(citizenId, Direction.UP);

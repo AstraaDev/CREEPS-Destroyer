@@ -2,6 +2,7 @@ package mobs;
 
 import action.*;
 import com.epita.creeps.given.exception.NoReportException;
+import com.epita.creeps.given.extra.Cartographer;
 import com.epita.creeps.given.json.Json;
 import com.epita.creeps.given.vo.Tile;
 import com.epita.creeps.given.vo.geometry.Point;
@@ -26,10 +27,11 @@ public class Cooker extends Citizen {
             citizenPosition = observeReport.unitPosition;
         } catch (NoReportException | UnirestException e) {
             // TODO : manage exception
-            throw new RuntimeException(e);
+            System.out.println("Cooker-1 Error: " + e.getMessage());
+            // throw new RuntimeException(e);
         }
 
-        int cycleLength = 5;
+        int cycleLength = 6;
         int directionChoice = 0;
 
         while(true) {
@@ -37,27 +39,35 @@ public class Cooker extends Citizen {
                 Point coordHdv = isCycleSafe(citizenPosition, cycleLength);
                 // TODO : or inventory is full
                 if (coordHdv != null) {
+                    System.out.println("Go to " + coordHdv + " from " + citizenPosition);
                     position.goTo(citizenId, citizenPosition, coordHdv);
                     citizenPosition = new Point(coordHdv.x, coordHdv.y);
                     action.unload(citizenId);
                     directionChoice++;
+                    while (position.nextGc() != initResponse.setup.gcTickRate) {
+                        System.out.println(position.nextGc() + " != " + initResponse.setup.gcTickRate);
+                        action.observe(citizenId);
+                    }
+                    System.out.println(position.nextGc() + " == " + initResponse.setup.gcTickRate);
                     continue;
                 }
-
                 DirectionInfo d = getDirection(directionChoice);
                 CommandResponse moveResponse = action.move(citizenId, d.direction);
                 citizenPosition = new Point(citizenPosition.x + d.dx, citizenPosition.y + d.dy);
                 MoveReport moveReport = Json.parseReport(call.getReport(moveResponse.reportId));
 
+                Cartographer.INSTANCE.register(moveReport);
                 Point nextFood = nextTarget(moveReport.unitPosition, Tile.Food);
                 if (nextFood != null) {
                     position.goTo(citizenId, citizenPosition, nextFood);
                     citizenPosition = new Point(nextFood.x, nextFood.y);
                     action.gather(citizenId);
+                    action.gather(citizenId);
                 }
             } catch (UnirestException | NoReportException e) {
                 // TODO : manage exceptions
-                throw new RuntimeException(e);
+                System.out.println("Cooker-2 Error: " + e.getMessage());
+                // throw new RuntimeException(e);
             }
         }
     }
