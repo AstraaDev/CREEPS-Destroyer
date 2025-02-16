@@ -33,7 +33,7 @@ public class Farmer extends Citizen {
             // throw new RuntimeException(e);
         }
 
-        int cycleLength = 6;
+        int cycleLength = 7;
         int directionChoice = 3;
         boolean isFull = false;
 
