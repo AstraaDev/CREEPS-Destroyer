@@ -54,21 +54,17 @@ public abstract class Citizen extends Thread {
         };
     }
 
-    public Point isCycleSafe(Point citizenPosition, int cycleLength) throws UnirestException {
+    public boolean isCycleSafe(Point citizenPosition, int cycleLength) throws UnirestException {
         Point coordHdv = position.findNearestHdv(citizenPosition);
         int hdvDistance = position.calcDistance(citizenPosition, coordHdv);
 
-        if (debugMode) {
+        if (debugMode)
             System.out.println((position.nextGc() - cycleLength) + " / " + (initResponse.costs.move.cast) + " = " + ((position.nextGc() - cycleLength) / (initResponse.costs.move.cast)) + " <= " + hdvDistance);
-        }
 
-        if ((position.nextGc() - cycleLength) / (initResponse.costs.move.cast) <= hdvDistance) {
-            return coordHdv;
-        }
-        return null;
+        return (position.nextGc() - cycleLength) / (initResponse.costs.move.cast) > hdvDistance;
     }
 
-    public Point nextTarget(Point position, Tile targetType) {
+    public Point nextSingleTarget(Point position, Tile targetType) {
         int[][] directions = {
                 {0, 1}, {1, 0}, {0, -1}, {-1, 0}, // 1 move
                 {1, 1}, {1, -1}, {-1, -1}, {-1, 1}, // 2 pseudo-diagonale moves
@@ -81,6 +77,25 @@ public abstract class Citizen extends Thread {
             Point p = new Point(position.x + dir[0], position.y + dir[1]);
             Tile tile = Cartographer.INSTANCE.requestTileType(p);
             if (tile != null && tile.equals(targetType)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    public Point nextMultipleeTarget(Point position, Tile targetType1, Tile targetType2, Tile targetType3) {
+        int[][] directions = {
+                {0, 1}, {1, 0}, {0, -1}, {-1, 0}, // 1 move
+                {1, 1}, {1, -1}, {-1, -1}, {-1, 1}, // 2 pseudo-diagonale moves
+                {0, 2}, {2, 0}, {0, -2}, {-2, 0}, // 2 direct moves
+                {-1, -2},{1, 2}, {2, 1}, {2, -1}, {1, -2}, {-1, 2}, {-2, -1}, {-2, 1}, // 3 pseudo-diagonale moves
+                {2, 2}, {2, -2}, {-2, -2}, {-2, 2}, // 4 pseudo-diagonale moves
+        };
+
+        for (int[] dir : directions) {
+            Point p = new Point(position.x + dir[0], position.y + dir[1]);
+            Tile tile = Cartographer.INSTANCE.requestTileType(p);
+            if (tile != null && (tile.equals(targetType1) || tile.equals(targetType2) || tile.equals(targetType3))) {
                 return p;
             }
         }
@@ -103,8 +118,9 @@ public abstract class Citizen extends Thread {
 
         while(true) {
             try {
-                Point coordHdv = isCycleSafe(citizenPosition, cycleLength);
-                if (coordHdv != null) {
+                Point coordHdv = position.findNearestHdv(citizenPosition);
+                boolean isCycleSafe = isCycleSafe(citizenPosition, cycleLength);
+                if (!isCycleSafe) {
                     position.goTo(citizenId, citizenPosition, coordHdv);
                     citizenPosition = new Point(coordHdv.x, coordHdv.y);
                     action.unload(citizenId);

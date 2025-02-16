@@ -13,8 +13,9 @@ import com.epita.creeps.given.vo.response.CommandResponse;
 import com.epita.creeps.given.vo.response.InitResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
-public class Cooker extends Citizen {
-    public Cooker(ServerCall call, InitResponse initResponse, String citizenId, Action action, Position position, double timeout, boolean debugMode) {
+
+public class Farmer extends Citizen {
+    public Farmer(ServerCall call, InitResponse initResponse, String citizenId, Action action, Position position, double timeout, boolean debugMode) {
         super(call, initResponse, citizenId, action, position, timeout, debugMode);
     }
 
@@ -28,12 +29,12 @@ public class Cooker extends Citizen {
             citizenPosition = observeReport.unitPosition;
         } catch (NoReportException | UnirestException e) {
             // TODO : manage exception
-            System.out.println("Cooker-1 Error: " + e.getMessage());
+            System.out.println("Farmer-1 Error: " + e.getMessage());
             // throw new RuntimeException(e);
         }
 
-        int cycleLength = 7;
-        int directionChoice = 0;
+        int cycleLength = 6;
+        int directionChoice = 3;
         boolean isFull = false;
 
         while(true) {
@@ -64,11 +65,10 @@ public class Cooker extends Citizen {
                 MoveReport moveReport = Json.parseReport(call.getReport(moveResponse.reportId));
 
                 Cartographer.INSTANCE.register(moveReport);
-                Point nextFood = nextSingleTarget(moveReport.unitPosition, Tile.Food);
-                if (nextFood != null) {
-                    position.goTo(citizenId, citizenPosition, nextFood);
-                    citizenPosition = new Point(nextFood.x, nextFood.y);
-                    action.gather(citizenId);
+                Point nextTarget = nextMultipleeTarget(moveReport.unitPosition, Tile.Food, Tile.Wood, Tile.Rock);
+                if (nextTarget != null) {
+                    position.goTo(citizenId, citizenPosition, nextTarget);
+                    citizenPosition = new Point(nextTarget.x, nextTarget.y);
                     CommandResponse gather =  action.gather(citizenId);
                     GatherReport gatherReport = Json.parseReport(call.getReport(gather.reportId));
                     if (gatherReport.gathered == 0)
@@ -76,7 +76,7 @@ public class Cooker extends Citizen {
                 }
             } catch (UnirestException | NoReportException e) {
                 // TODO : manage exceptions
-                System.out.println("Cooker-2 Error: " + e.getMessage());
+                System.out.println("Farmer-2 Error: " + e.getMessage());
                 // throw new RuntimeException(e);
             }
         }

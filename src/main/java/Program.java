@@ -3,6 +3,7 @@ import action.Position;
 import action.ServerCall;
 import com.epita.creeps.given.json.Json;
 import com.epita.creeps.given.vo.response.InitResponse;
+import com.epita.creeps.given.vo.response.StatisticsResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import mobs.*;
 import java.util.*;
@@ -30,11 +31,11 @@ public class Program {
         Action action = new Action(initResponse, call, timeout);
         Position position = new Position(call, initResponse, action);
 
-        Citizen cooker = new Cooker(call, initResponse, initResponse.citizen1Id, action, position, timeout, true);
-        Citizen fetiche = new Fetiche(call, initResponse, initResponse.citizen2Id, action, position, timeout, false);
+        Citizen cooker = new Cooker(call, initResponse, initResponse.citizen1Id, action, position, timeout, false);
+        Citizen farmer = new Farmer(call, initResponse, initResponse.citizen2Id, action, position, timeout, true);
 
         // Threads
         cooker.start();
-        fetiche.start();
+        farmer.start();
     }
 }
