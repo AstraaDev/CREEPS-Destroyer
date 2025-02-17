@@ -31,7 +31,7 @@ public class Program {
         Position position = new Position(call, initResponse, action);
 
         Citizen farmer = new Farmer(call, initResponse, initResponse.citizen1Id, action, position, timeout, false);
-        Citizen cooker = new Cooker(call, initResponse, initResponse.citizen2Id, action, position, timeout, true);
+        Citizen cooker = new Cooker(call, initResponse, initResponse.citizen2Id, action, position, timeout, false);
 
         // Threads
         farmer.start();

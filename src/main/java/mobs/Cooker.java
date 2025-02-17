@@ -58,6 +58,7 @@ public class Cooker extends Citizen {
                     isFull = false;
                     continue;
                 }
+
                 DirectionInfo d = getDirection(directionChoice);
                 CommandResponse moveResponse = action.move(citizenId, d.direction);
                 citizenPosition = new Point(citizenPosition.x + d.dx, citizenPosition.y + d.dy);

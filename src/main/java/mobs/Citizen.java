@@ -7,12 +7,16 @@ import com.epita.creeps.given.json.Json;
 import com.epita.creeps.given.vo.Tile;
 import com.epita.creeps.given.vo.geometry.Direction;
 import com.epita.creeps.given.vo.geometry.Point;
+import com.epita.creeps.given.vo.report.BuildReport;
 import com.epita.creeps.given.vo.report.ObserveReport;
 import com.epita.creeps.given.vo.response.CommandResponse;
 import com.epita.creeps.given.vo.response.InitResponse;
 import com.mashape.unirest.http.exceptions.UnirestException;
 
-public abstract class Citizen extends Thread {
+import java.util.Map;
+import java.util.function.Function;
+
+public class Citizen extends Thread {
 
     ServerCall call;
     InitResponse initResponse;
@@ -102,6 +106,30 @@ public abstract class Citizen extends Thread {
         return null;
     }
 
+    public void newHousehold(String citizenType1, String citizenType2) {
+        CommandResponse buildJson = action.build(citizenId, "household");
+        try {
+            BuildReport buildReport = Json.parseReport(call.getReport(buildJson.reportId));
+
+            createCitizen(citizenType1, buildReport.spawnedCitizen1Id).start();
+            createCitizen(citizenType2, buildReport.spawnedCitizen2Id).start();
+
+        } catch (Exception e) {
+            System.out.println("Citizen-1 Error: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Citizen createCitizen(String type, String citizenId) {
+        Map<String, Function<String, Citizen>> citizenMap = Map.of(
+                "Fetiche", id -> new Fetiche(call, initResponse, id, action, position, timeout, false),
+                "Cooker", id -> new Cooker(call, initResponse, id, action, position, timeout, false),
+                "Farmer", id -> new Farmer(call, initResponse, id, action, position, timeout, false)
+        );
+
+        return citizenMap.getOrDefault(type, id -> new Citizen(call, initResponse, id, action, position, timeout, false)).apply(citizenId);
+    }
+
     public void run() {
         int cycleLength = 4;
         CommandResponse observeResponse = action.observe(citizenId);
@@ -112,7 +140,7 @@ public abstract class Citizen extends Thread {
             citizenPosition = observeReport.unitPosition;
         } catch (NoReportException | UnirestException e) {
             // TODO : manage exception
-            System.out.println("Citizen-1 Error: " + e.getMessage());
+            System.out.println("Citizen-2 Error: " + e.getMessage());
             throw new RuntimeException(e);
         }
 
@@ -127,7 +155,7 @@ public abstract class Citizen extends Thread {
                     continue;
                 }
             } catch (UnirestException e) {
-                System.out.println("Citizen-2 Error: " + e.getMessage());
+                System.out.println("Citizen-3 Error: " + e.getMessage());
                 // TODO : manage exception
                 // throw new RuntimeException(e);
             }
