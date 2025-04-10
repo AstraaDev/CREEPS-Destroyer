@@ -1,13 +1,23 @@
 # 💣 CREEPS Destroyer
 ```
-ASCII ART
+     _.-^^---....,,--       
+ _--                  --_  
+<                        >)
+|                         | 
+ \._                   _./  
+    ```--. . , ; .--'''       
+          | |   |             
+       .-=||  | |=-.   
+       `-=#$%&%$#=-'   
+          | ;  :|     
+ _____.,-#%&$@%#&#~,._____
 ```
 
 ---
 
 ## 📖 Project Overview
 
-**CREEPS Destroyer** is a project developed as part of the APP ING1 course at EPITA, and to showcase the full potential of the Creeps game. The objective is to push the game's mechanics to their limits, automating and optimizing every aspect to create the most efficient and complete strategy possible.
+**CREEPS Destroyer** is a project developed as part of an EPITA project, and to showcase the full potential of the Creeps game. The objective is to push the game's mechanics to their limits, automating and optimizing every aspect to create the most efficient and complete strategy possible.
 
 While the game technically has no definitive end, this project aims to develop a system capable of progressing as far as possible, optimizing resource management, base expansion, and survival against threats.
 
@@ -79,4 +89,3 @@ Replace:
 ## 📜 License  
 
 This project is for **personal and demonstration purposes only**.  
-It follows EPITA's **internal usage policies** and is **not meant for public distribution**.
